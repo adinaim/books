@@ -1,8 +1,16 @@
 from django.db import models
 from slugify import slugify
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
 
 
 class Author(models.Model):
+    user = models.ForeignKey(
+        to=User,
+        on_delete=models.DO_NOTHING,
+    )
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     about = models.TextField()
@@ -14,7 +22,7 @@ class Author(models.Model):
         if not self.name:                                 
             self.name = self.last_name + ' ' + self.first_name  
         if not self.slug:
-            self.slug = slugify(self.first_name) + '_' + slugify(self.last_name)
+            self.slug = slugify(self.name)                      # change
         return super().save(*args, **kwargs)
     
     def __str__(self):
@@ -30,7 +38,11 @@ class Book(models.Model):
         ('archive', 'Archived'),
         ('avail', 'Available')
     )
-    
+
+    user = models.ForeignKey(
+        to=User,
+        on_delete=models.DO_NOTHING,
+    )
     title = models.CharField(max_length=70)
     author = models.ForeignKey(
         to=Author,
@@ -63,6 +75,10 @@ class Book(models.Model):
 
 
 class Genre(models.Model):
+    user = models.ForeignKey(
+        to=User,
+        on_delete=models.DO_NOTHING,
+    )
     genre = models.CharField(max_length=20, unique=True)
     slug = models.SlugField(primary_key=True, blank=True, max_length=25)
 

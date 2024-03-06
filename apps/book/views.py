@@ -1,11 +1,19 @@
 from rest_framework.viewsets import ModelViewSet, GenericViewSet   
-from rest_framework.permissions import AllowAny
-from rest_framework import mixins   
+from rest_framework.response import Response
+from rest_framework import mixins
+from rest_framework.permissions import (
+    AllowAny,
+    IsAdminUser,
+    IsAuthenticated,
+)   
 
 from .models import (
     Author,
     Book,
     Genre     
+)
+from .permissions import (
+    IsOwner
 )
 
 from .serializers import (
@@ -15,6 +23,7 @@ from .serializers import (
     
     BookCreateSerializer, 
     BookListSerializer, 
+    BookUpdateSerializer, 
     BookRetrieveSerializer,
 
     GenreCreateSerializer,   
@@ -36,12 +45,18 @@ class AuthorViewSet(ModelViewSet):
         return super().get_serializer_class()
 
     def get_permissions(self):
-        if self.action in ['list', 'retrieve', 'create', 'destroy', 'update', 'partial_update']:
+        if self.action == 'list': 
             self.permission_classes = [AllowAny]
+        elif self.action == 'retrieve': 
+            self.permission_classes = [IsAuthenticated]
+        elif self.action in ['create', 'update', 'partial_update']: 
+            self.permission_classes = [IsAdminUser]
+        elif self.action == 'destroy': 
+            self.permission_classes = [IsOwner]
         return super().get_permissions()
     
 
-class BookViewSet(ModelViewSet):      # CRUD - Create, Retrieve, Update, Delete, List 
+class BookViewSet(ModelViewSet):      
     queryset = Book.objects.all()
     serializer_class = BookCreateSerializer
 
@@ -50,14 +65,30 @@ class BookViewSet(ModelViewSet):      # CRUD - Create, Retrieve, Update, Delete,
             return BookCreateSerializer
         elif self.action == 'list':
             return BookListSerializer
+        elif self.action in ['update', 'partial_update']:
+            return BookUpdateSerializer
         elif self.action == 'retrieve':
             return BookRetrieveSerializer
         return super().get_serializer_class()
 
     def get_permissions(self):
-        if self.action in ['list', 'retrieve', 'create', 'destroy', 'update', 'partial_update']:
+        if self.action == 'list': 
             self.permission_classes = [AllowAny]
+        elif self.action == 'retrieve': 
+            self.permission_classes = [IsAuthenticated]
+        elif self.action in ['create', 'update', 'partial_update']: 
+            self.permission_classes = [IsAdminUser]
+        elif self.action == 'destroy': 
+            self.permission_classes = [IsOwner]
         return super().get_permissions()
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        author_id = request.query_params.get('author_id')
+        if author_id:
+            queryset = queryset.filter(author_id=author_id)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class GenreViewSet(mixins.ListModelMixin,
@@ -78,6 +109,12 @@ class GenreViewSet(mixins.ListModelMixin,
         return super().get_serializer_class()
 
     def get_permissions(self):
-        if self.action in ['list', 'retrieve', 'create', 'destroy', 'update', 'partial_update']:
+        if self.action == 'list': 
             self.permission_classes = [AllowAny]
+        elif self.action == 'retrieve': 
+            self.permission_classes = [IsAuthenticated]
+        elif self.action in ['create', 'update', 'partial_update']: 
+            self.permission_classes = [IsAdminUser]
+        elif self.action == 'destroy': 
+            self.permission_classes = [IsOwner]
         return super().get_permissions()
