@@ -1,15 +1,19 @@
 from rest_framework import serializers
-
+from django.db.models import Avg
 
 from .models import (
     Author,
     Book,
     Genre
     )
+from apps.review.serializers import (
+    CommentSerializer,
+    LikeSerializer
+)
 
 
 class AuthorCreateSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.username')  # 1
+    user = serializers.ReadOnlyField(source='user.username')  
 
     class Meta:
         model = Author
@@ -21,7 +25,7 @@ class AuthorCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'This author already exists'
             )
-        user = self.context['request'].user                   # 1
+        user = self.context['request'].user                   
         attrs['user'] = user
         return attrs
     
@@ -29,24 +33,24 @@ class AuthorCreateSerializer(serializers.ModelSerializer):
 class AuthorListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author 
-        fields = ['first_name', 'last_name', 'slug', 'user']  # 2
+        fields = ['first_name', 'last_name', 'slug', 'user']  
 
 
 class AuthorRetrieveSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.username')  # 3
+    user = serializers.ReadOnlyField(source='user.username')  
 
     class Meta:
         model = Author
         fields = '__all__'
 
-    def validate(self, attrs):                               # 3
+    def validate(self, attrs):                                  
         user = self.context['request'].user
         attrs['user'] = user
         return attrs
 
 
 class BookCreateSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.username') # 4
+    user = serializers.ReadOnlyField(source='user.username') 
     
     class Meta:
         model = Book
@@ -58,7 +62,7 @@ class BookCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'This book already exists'
             )
-        user = self.context['request'].user                 # 4
+        user = self.context['request'].user                 
         attrs['user'] = user
         return attrs
     
@@ -66,60 +70,60 @@ class BookCreateSerializer(serializers.ModelSerializer):
 class BookListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book  
-        fields = ['title', 'author', 'slug', 'user']       # 5
+        fields = ['title', 'author', 'slug', 'user']       
 
 
 class BookUpdateSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.username')  # 6
+    user = serializers.ReadOnlyField(source='user.username')  
 
     class Meta:
-        model = Book                                          # 6
+        model = Book                                          
         fields = ['title', 'author', 'desc', 'image', 'year_publ', 'pages', 'slug', 'status', 'book', 'genre', 'user']
     
-    def validate(self, attrs):                                 # 6
+    def validate(self, attrs):                                 
         user = self.context['request'].user
         attrs['user'] = user
         return attrs
 
 
 class BookRetrieveSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.username')   # 7
+    user = serializers.ReadOnlyField(source='user.username')   
 
     class Meta:
         model = Book
         fields = '__all__'
 
-    def validate(self, attrs):                                 # 7
+    def validate(self, attrs):                                 
         user = self.context['request'].user
         attrs['user'] = user
         return attrs
     
-    # def to_representation(self, instance):
-    #     rep = super().to_representation(instance)
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
 
-    #     rep['comments'] = CommentSerializer(
-    #     instance.books_comments.all(), many=True
-    #     ).data
+        rep['comments'] = CommentSerializer(
+        instance.books_comments.all(), many=True
+        ).data
 
-    #     rating = instance.books_ratings.aggregate(Avg('rating'))['rating__avg']   
-    #     if rating:
-    #         rep['rating'] = round(rating, 1) 
-    #     else:
-    #         rep['rating'] = 0.0
+        rating = instance.books_ratings.aggregate(Avg('rating'))['rating__avg']   
+        if rating:
+            rep['rating'] = round(rating, 1) 
+        else:
+            rep['rating'] = 0.0
         
-    #     rep['likes'] = instance.books_likes.all().count()
-    #     rep['liked_by'] = LikeSerializer(
-    #         instance.books_likes.all().only('user'), many=True).data 
+        rep['likes'] = instance.books_likes.all().count()
+        rep['liked_by'] = LikeSerializer(
+            instance.books_likes.all().only('user'), many=True).data 
 
-    #     return rep
+        return rep
 
 
 class GenreCreateSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.username')   # 8
+    user = serializers.ReadOnlyField(source='user.username')   
 
     class Meta:
         model = Genre
-        fields = ['genre', 'user']                             # 8
+        fields = ['genre', 'user']                             
 
     def validate(self, attrs):
         genre = attrs.get('genre')
@@ -127,7 +131,7 @@ class GenreCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Such genre already exists'
             )
-        user = self.context['request'].user                    # 8
+        user = self.context['request'].user                    
         attrs['user'] = user
         return attrs
 
@@ -139,12 +143,12 @@ class GenreListSerializer(serializers.ModelSerializer):
 
 
 class GenreRetrieveSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.username')    # 9
+    user = serializers.ReadOnlyField(source='user.username')    
     books = BookListSerializer(read_only=True, many=True)
 
     class Meta: 
         model = Genre  
-        fields = ['user', 'genre', 'books']                     # 9
+        fields = ['user', 'genre', 'books']                     
 
     def to_representation(self, instance: Genre):
         books = instance.book_genre.all()
@@ -153,7 +157,7 @@ class GenreRetrieveSerializer(serializers.ModelSerializer):
             instance=books, many=True).data
         return rep
     
-    def validate(self, attrs):                                   # 9
+    def validate(self, attrs):                                   
         user = self.context['request'].user
         attrs['user'] = user
         return attrs

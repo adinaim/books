@@ -6,6 +6,5 @@ from .models import (
     Genre
 )
 
-admin.site.register(Author)
-admin.site.register(Book)
-admin.site.register(Genre)
+admin.site.register([Author, Book, Genre])
+

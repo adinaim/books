@@ -46,8 +46,8 @@ class RegistrationSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         user.create_activation_code()
         if validated_data['code_method'] == 'email':
+            # send_activation_code(user.email, user.activation_code)
             send_activation_code(user.email, user.activation_code)
-            # send_activation_code.delay(user.email, user.activation_code)
         # if validated_data['code_method'] == 'phone':
         #     send_activation_sms(user.phone, user.activation_code) 
             # send_activation_sms.delay(user.phone, user.activation_code) 
@@ -76,42 +76,42 @@ class RegistrationSerializer(serializers.ModelSerializer):
 #         user.save()
 
 
-# class UserListSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ['username']
+class UserListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username']
 
 
-# class ChangePasswordSerializer(serializers.Serializer):
-#     old_password = serializers.CharField(max_length=150, required=True)
-#     new_password = serializers.CharField(max_length=150, required=True)
-#     new_password_confirm = serializers.CharField(max_length=150, required=True)
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(max_length=150, required=True)
+    new_password = serializers.CharField(max_length=150, required=True)
+    new_password_confirm = serializers.CharField(max_length=150, required=True)
 
-#     def validate_old_password(self, old_password):
-#         user = self.context.get('request').user
-#         if not user.check_password(old_password):
-#             raise serializers.ValidationError('Incorrect password')
-#         return old_password
+    def validate_old_password(self, old_password):
+        user = self.context.get('request').user
+        if not user.check_password(old_password):
+            raise serializers.ValidationError('Incorrect password')
+        return old_password
 
-#     def validate(self, attrs: dict):
-#         old_password = attrs.get('old_password')
-#         new_password = attrs.get('new_password')
-#         new_password_confirm = attrs.get('new_password_confirm')
-#         if new_password != new_password_confirm:
-#             raise serializers.ValidationError(
-#                 'Passwords do not match.'
-#             )
-#         if old_password == new_password:
-#             raise serializers.ValidationError(
-#                 'The old and new passwords are the same. Please come up with a new password'
-#             )
-#         return attrs
+    def validate(self, attrs: dict):
+        old_password = attrs.get('old_password')
+        new_password = attrs.get('new_password')
+        new_password_confirm = attrs.get('new_password_confirm')
+        if new_password != new_password_confirm:
+            raise serializers.ValidationError(
+                'Passwords do not match.'
+            )
+        if old_password == new_password:
+            raise serializers.ValidationError(
+                'The old and new passwords are the same. Please come up with a new password'
+            )
+        return attrs
 
-#     def set_new_password(self):
-#         user = self.context.get('request').user
-#         password = self.validated_data.get('new_password')
-#         user.set_password(password)
-#         user.save()
+    def set_new_password(self):
+        user = self.context.get('request').user
+        password = self.validated_data.get('new_password')
+        user.set_password(password)
+        user.save()
 
 
 # class RestorePasswordSerializer(serializers.Serializer):

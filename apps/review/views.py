@@ -2,11 +2,9 @@ from rest_framework.permissions import (
     IsAuthenticated,
 )
 
-from rest_framework.viewsets import ModelViewSet, GenericViewSet
+from rest_framework.viewsets import GenericViewSet
 from rest_framework.permissions import(
-    IsAdminUser,
     IsAuthenticated,
-    AllowAny,
 )
 from rest_framework.response import Response
 from rest_framework import mixins
@@ -43,8 +41,8 @@ class SavedBookViewSet(mixins.CreateModelMixin,
             self.permission_classes = [IsAuthenticated]
         if self.action == 'save' and self.request.method =='DELETE':
             self.permission_classes = [IsOwner]
-        # if self.action == 'list':
-        #     self.permission_classes = [IsOwner]
+        if self.action == 'list':
+            self.permission_classes = [IsOwner]
         return super().get_permissions()
 
     def save(self, request, pk=None):
@@ -111,6 +109,11 @@ class LikeView(mixins.CreateModelMixin,
         if self.action == 'like' and self.request.method =='DELETE':
             self.permission_classes = [IsOwner]
         return super().get_permissions()
+    
+    # def get_serializer_context(self):
+    #     context = super().get_serializer_context()
+    #     context['request'] = self.request
+    #     return context
 
     def like(self, request, pk=None):
         book = self.get_object()
@@ -118,7 +121,7 @@ class LikeView(mixins.CreateModelMixin,
             data=request.data, 
             context={
                 'request':request,
-                'book':book
+                'book': book
             })
         if serializer.is_valid(raise_exception=True):
             if request.method == 'POST':

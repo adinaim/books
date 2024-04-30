@@ -28,7 +28,7 @@ class LikeSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = BookLike
-        fields = '__all__'
+        fields = ('user', 'book')
 
     def create(self, validated_data):
         user = self.context.get('request').user
@@ -46,6 +46,11 @@ class LikeSerializer(serializers.ModelSerializer):
             like.delete()
         else:
             raise serializers.ValidationError('not liked yet')
+    
+    # def validate(self, attrs):
+    #     user = self.context.get('request').user
+    #     attrs['user'] = user
+    #     return attrs
 
 
 class RatingSerializer(serializers.ModelSerializer):

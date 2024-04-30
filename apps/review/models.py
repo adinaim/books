@@ -64,13 +64,15 @@ class BookLike(models.Model):
     user = models.ForeignKey(
         to=User,
         on_delete=models.CASCADE,
-        related_name='likes'
+        related_name='likes',
+        null=True
     )
     book = models.ForeignKey(
         to=Book,
         on_delete=models.CASCADE,
         related_name='books_likes'
     )
+    # book_id = models.PositiveSmallIntegerField(null=True, blank=True)
 
     def __str__(self):
         return f'Liked by {self.user.username}'

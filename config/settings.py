@@ -1,6 +1,6 @@
 from pathlib import Path
 from decouple import config
-from datetime import timedelta  # 2
+from datetime import timedelta  
 import os
 
 
@@ -33,14 +33,13 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
 
-    'rest_framework_simplejwt',  # 5
-    'rest_framework_simplejwt.token_blacklist', # 6
+    'rest_framework_simplejwt',  
+    'rest_framework_simplejwt.token_blacklist', 
 
-    'apps.account', # 3
+    'apps.account', 
     'apps.book',
+    'apps.order',
     'apps.review',
-    
-
 ]
 
 MIDDLEWARE = [
@@ -104,7 +103,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-AUTH_USER_MODEL = 'account.User' # 1
+AUTH_USER_MODEL = 'account.User' 
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
@@ -133,7 +132,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-SIMPLE_JWT = {      # 4
+SIMPLE_JWT = {      
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=360),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': False,
@@ -179,3 +178,7 @@ EMAIL_PORT = config('EMAIL_PORT', default = 587)
 EMAIL_HOST = config('EMAIL_HOST') 
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD') 
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
+
+
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
